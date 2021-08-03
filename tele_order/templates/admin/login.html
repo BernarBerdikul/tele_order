@@ -1,0 +1,38 @@
+{% load i18n static %}<!DOCTYPE html>
+<html>
+<head>
+	<title>Login Form Design</title>
+    <link rel="stylesheet" type="text/css" href="{% static "/css/style.css" %}">
+</head>
+{% block content %}
+<body>
+    <div class="loginbox">
+	{% if user.is_authenticated %}
+	<p class="errornote">
+		{% blocktranslate trimmed %}
+			You are authenticated as {{ username }}, but are not authorized to
+			access this page. Would you like to login to a different account?
+		{% endblocktranslate %}
+	</p>
+	{% endif %}
+
+    <img src="{% static 'images/avatar.jpg' %}" class="avatar">
+	<h1>Admin login page</h1>
+	<form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+		{{ form.csrf }}
+		{{ form.username.label_tag }} {{ form.username }}
+		{{ form.password.label_tag }} {{ form.password }}
+		<input type="submit" name="" value="Login">
+		{% url 'admin_password_reset' as password_reset_url %}
+
+		{% if password_reset_url %}
+		<div class="password-reset-link">
+			<a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+		</div>
+		{% endif %}
+	</form>
+    </div>
+{% endblock %}
+</body>
+</html>
+
