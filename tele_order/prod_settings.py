@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # project apps
     'tele_order.telegram',  # telegram bot
     'tele_order.core',
+    'tele_order.static_translation',
 
     # media clean
     'django_cleanup.apps.CleanupConfig',

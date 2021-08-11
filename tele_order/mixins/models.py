@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from tele_order.utils.support_code import trim_string
+
 
 class CreateTimestampMixin(models.Model):
     """
@@ -39,6 +41,13 @@ class ValidateErrorMixin(models.Model):
     def save(self, **kwargs):
         self.full_clean()
         super().save(**kwargs)
+
+    def clean(self):
+        for field in self._meta.fields:
+            if isinstance(field, (models.CharField, models.TextField)):
+                value = getattr(self, field.name)
+                if value:
+                    setattr(self, field.name, trim_string(value))
 
     class Meta:
         abstract = True

@@ -4,9 +4,7 @@ import qrcode
 from django.core.files import File
 from django.db import models
 from translations.models import Translatable
-from tele_order.mixins.models import (
-    UpdateTimestampMixin, ValidateErrorMixin
-)
+from tele_order.mixins.models import UpdateTimestampMixin, ValidateErrorMixin
 from tele_order.mixins.resized_field import ResizedImageField
 from tele_order.utils import constants
 from django.utils.translation import gettext_lazy as _

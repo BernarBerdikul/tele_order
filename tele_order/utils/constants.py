@@ -16,8 +16,6 @@ DEVELOPERS_TIMEZONE = "Asia/Almaty"
 IMAGE_QR_SAVE_PATH = 'restaurants'
 IMAGE_PROMOTION_SAVE_PATH = 'promotions'
 
-MEDIA_DISHES = "dish"
-
 PHONES_MIN_LENGTH = 11
 MAX_IMAGE_SIZE = 20  # in Mb
 
@@ -55,7 +53,7 @@ MANAGER = 'MANAGER'
 SUPER_ADMIN = 'SUPER_ADMIN'
 
 USER_TYPES = (
-    (USER, _("Менеджер")),
+    (USER, _("Пользователь")),
     (MANAGER, _("Менеджер")),
     (SUPER_ADMIN, _("Супер админ")),
 )
@@ -70,7 +68,6 @@ RESERVED_TAG_LIST = [
 ]
 
 WELCOME_MESSAGE = 0
-
 
 TELEGRAM_ERROR_CHAT_ID = 421591563
 TELEGRAM_MESSAGES = (
