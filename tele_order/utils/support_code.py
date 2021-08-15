@@ -12,6 +12,3 @@ def trim_string(value):
             return " ".join([word for word in value.strip().split()])
         return value.strip()
     return value
-
-
-

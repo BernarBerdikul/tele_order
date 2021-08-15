@@ -6,6 +6,7 @@ from django.db import models
 from translations.models import Translatable
 from tele_order.mixins.models import UpdateTimestampMixin, ValidateErrorMixin
 from tele_order.mixins.resized_field import ResizedImageField
+from tele_order.static_translation.models import StaticTranslation
 from tele_order.utils import constants
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import (
@@ -60,6 +61,8 @@ class User(Translatable, AbstractBaseUser, PermissionsMixin,
         default=constants.USER, verbose_name=_("Роль пользователя"))
     is_active = models.BooleanField(
         default=True, verbose_name=_("Пользователь активен"))
+    last_restaurant_id = models.IntegerField(
+        blank=True, null=True, verbose_name=_("ID последнего ресторана"))
 
     objects = UserManager()
 
@@ -151,7 +154,9 @@ class Order(Translatable, UpdateTimestampMixin, ValidateErrorMixin):
         if self.pk is not None and self.order_accepted is True:
             bot = telebot.TeleBot(TOKEN)
             chat_id = self.user.telegram_chat_id
-            text = "Спасибо за ожидание ваш заказ готов!"
+            text = StaticTranslation.objects.translate(
+                self.user.language_code
+            ).get(key=constants.MESSAGE_6).value
             bot.send_message(chat_id=chat_id, text=text)
             send_promotion(bot=bot, chat_id=chat_id)
         """ before save"""

@@ -1,7 +1,6 @@
 import logging
 import telebot
 import os
-from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.utils import timezone
@@ -38,18 +37,12 @@ class Command(BaseCommand):
 
         @bot.message_handler(commands=['start'])
         def send_welcome(message):
+            """ get user's params """
             chat_id = message.from_user.id
             language = get_language(message=message)
 
-            check_it_is_bot(message=message, bot=bot)
-            user = create_new_user(message=message, chat_id=chat_id)
-
-            content_type_id = \
-                ContentType.objects.get_for_model(StaticTranslation).id
-            text = StaticTranslation.objects.filter(
-                content_type_id=content_type_id, key=1
-            ).translate(language).first().value
-
+            check_it_is_bot(message=message, bot=bot, language=language)
+            text = None
             if message.text is not None:
                 try:
                     tag = str(message.text).split(" ")[1]
@@ -58,48 +51,74 @@ class Command(BaseCommand):
                 restaurants = Restaurant.objects.filter(tag=tag)
                 if restaurants.exists():
                     restaurant = restaurants.first()
-                    text = f"Здравствуй {user.first_name}. Добро пожаловать в ресторан '{restaurant.title}'." \
-                           f"\nВведите номер вашего заказа:"
+                    user = create_new_user(
+                        message=message, chat_id=chat_id,
+                        restaurant_id=restaurant.id
+                    )
+                    text = StaticTranslation.objects.translate(language).get(
+                        key=constants.MESSAGE_2
+                    ).value % (user.first_name, restaurant.title)
+            """ get hello message from DB """
+            if text:
+                text = StaticTranslation.objects.translate(
+                    language
+                ).get(key=constants.MESSAGE_1).value
             bot.send_message(chat_id=message.from_user.id, text=text)
+
+        @bot.message_handler(commands=['my_orders'])
+        def my_orders(message):
+            chat_id = message.from_user.id
+            markup, count = client_orders(message=message)
+            display_markup(
+                chat_id=chat_id, markup=markup, count=count, bot=bot,
+                language=get_language(message=message)
+            )
 
         @bot.message_handler(content_types=['text'])
         def get_text_messages(message):
-            text = 'Я создан для отправки заказов, а не для того что бы разговаривать с вами 😐'
-            chat_id = message.from_user.id
+            """ get user's params """
             language = get_language(message=message)
+            chat_id = message.from_user.id
+
+            text = StaticTranslation.objects.translate(
+                language
+            ).get(key=constants.MESSAGE_3).value
             if message.text[0] == "№":
                 order_detail(message=message, bot=bot,
                              chat_id=chat_id, language=language)
-            elif message.text == "/my_orders":
-                if is_client(message=message):
-                    markup, count = client_orders(message=message)
-                    display_markup(
-                        chat_id=chat_id, markup=markup,
-                        count=count, bot=bot
-                    )
-                elif is_manager(message=message):
-                    markup, count = manager_orders(message=message)
-                    display_markup(
-                        chat_id=chat_id, markup=markup,
-                        count=count, bot=bot
-                    )
+            # elif message.text == "/my_orders":
+            #     if is_client(message=message):
+            #         markup, count = client_orders(message=message)
+            #         display_markup(
+            #             chat_id=chat_id, markup=markup,
+            #             count=count, bot=bot
+            #         )
+            #     elif is_manager(message=message):
+            #         markup, count = manager_orders(message=message)
+            #         display_markup(
+            #             chat_id=chat_id, markup=markup,
+            #             count=count, bot=bot
+            #         )
             elif str(message.text).isnumeric():
                 users = User.objects.filter(
                     telegram_chat_id=chat_id, role=constants.USER
                 )
                 if not users.exists():
-                    text = "Упс. Попробуйте просканировать QR еще раз"
+                    text = StaticTranslation.objects.translate(
+                        language
+                    ).get(key=constants.MESSAGE_5).value
                     bot.send_message(chat_id=chat_id, text=text)
                 else:
                     user = users.first()
                     new_order = Order.objects.create(
-                        # restaurant_id=restaurant_id,
+                        restaurant_id=user.last_restaurant_id,
                         user_id=user.id, order_number=message.text
                     )
-                    text = f"Отлично {user.first_name}. Ваш заказ №{new_order.order_number} зарегестрирован.\n" \
-                           f"Вам напишут когда ваш заказ будет готов."
+                    text = StaticTranslation.objects.translate(language).get(
+                        key=constants.MESSAGE_4
+                    ).value % (user.first_name, new_order.order_number)
                     bot.send_message(chat_id=message.from_user.id, text=text)
             else:
                 bot.send_message(chat_id=message.from_user.id, text=text)
 
-        bot.polling(none_stop=True)
+        bot.infinity_polling()
