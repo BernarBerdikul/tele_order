@@ -3,7 +3,7 @@ FROM python:3.9.4
 
 # set work directory
 WORKDIR /usr/src/app
-RUN mkdir django_static
+RUN mkdir static
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
