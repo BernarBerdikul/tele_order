@@ -17,12 +17,18 @@ def check_it_is_bot(message, bot, language: str) -> None:
     return None
 
 
-def create_new_user(message, chat_id: int, restaurant_id: int):
+def get_or_create_user(message, chat_id: int, restaurant_id: int):
     """ try create new user, else return user from DB """
+    """ check if user has last name """
     if message.from_user.last_name is not None:
         last_name = message.from_user.last_name
     else:
         last_name = None
+    """ check if user has first name """
+    if message.from_user.first_name is not None:
+        first_name = message.from_user.last_name
+    else:
+        first_name = None
     """ find user in db """
     users = User.objects.filter(telegram_chat_id=chat_id)
     if users.exists():
@@ -37,8 +43,7 @@ def create_new_user(message, chat_id: int, restaurant_id: int):
             language_code = constants.DEFAULT_LANGUAGE
         user = User.objects.create(
             username=message.from_user.username,
-            first_name=message.from_user.first_name,
-            last_name=last_name,
+            first_name=first_name, last_name=last_name,
             telegram_chat_id=chat_id,
             language_code=language_code[:2],
             last_restaurant_id=restaurant_id
@@ -56,10 +61,11 @@ def get_user(message):
 
 
 def is_client(message) -> bool:
-    if User.objects.filter(telegram_chat_id=message.from_user.id,
-                           role=constants.USER):
+    if User.objects.filter(
+            telegram_chat_id=message.from_user.id, role=constants.USER):
         return True
-    return False
+    else:
+        return False
 
 
 def client_orders(message):
@@ -76,7 +82,8 @@ def is_manager(message):
     if User.objects.filter(telegram_chat_id=message.from_user.id,
                            role=constants.MANAGER):
         return True
-    return False
+    else:
+        return False
 
 
 def manager_orders(message):
@@ -94,22 +101,59 @@ def manager_orders(message):
         return markup, 0
 
 
-def order_detail(message, bot, chat_id, language):
+def order_detail_client(message, bot, chat_id, language):
+    """ method to get order's detail info """
     if str(message.text[1:]).isnumeric():
-        order_number = message.text[1:]
+        order_number = int(message.text[1:])
         orders = Order.objects.filter(order_number=order_number)
         if orders.exists():
-            order = orders.translate_related(
+            order = orders.select_related(
+                'restaurant'
+            ).translate_related(
                 'restaurant'
             ).translate(language).first()
             """ prepare answer about order """
             answer = StaticTranslation.objects.translate(
                 language
             ).get(key=constants.MESSAGE_9).value % (
-                order.order_number, convert_datetime_with_hours_long(
+                order.restaurant.title, order.order_number,
+                convert_datetime_with_hours_long(
                     datetime=order.date_create
                 )
             )
+            bot.send_message(chat_id, answer)
+        else:
+            """ message that this order number does not exist """
+            answer = StaticTranslation.objects.translate(
+                language
+            ).get(key=constants.MESSAGE_13).value
+            """ send message """
+            bot.send_message(chat_id, answer)
+
+
+def order_detail_manager(message, bot, chat_id, language):
+    """ method to get order's detail info """
+    if str(message.text[1:]).isnumeric():
+        order_number = int(message.text[1:])
+        orders = Order.objects.filter(order_number=order_number)
+        if orders.exists():
+            order = orders.select_related('restaurant', 'user').first()
+            """ prepare answer about order """
+            answer = StaticTranslation.objects.translate(
+                language
+            ).get(key=constants.MESSAGE_14).value % (
+                order.user.username, order.order_number,
+                convert_datetime_with_hours_long(
+                    datetime=order.date_update
+                )
+            )
+            bot.send_message(chat_id, answer)
+        else:
+            """ message that this order number does not exist """
+            answer = StaticTranslation.objects.translate(
+                language
+            ).get(key=constants.MESSAGE_13).value
+            """ send message """
             bot.send_message(chat_id, answer)
 
 

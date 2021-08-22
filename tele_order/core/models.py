@@ -47,9 +47,11 @@ class User(Translatable, AbstractBaseUser, PermissionsMixin,
     password = models.CharField(
         max_length=128, blank=True, null=True, verbose_name=_("Пароль"))
     first_name = models.CharField(
+        blank=True, null=True,
         max_length=128, verbose_name=_("Логин пользователя"))
     last_name = models.CharField(
-        max_length=128, verbose_name=_("Логин пользователя"))
+        blank=True, null=True, max_length=128,
+        verbose_name=_("Логин пользователя"))
     telegram_chat_id = models.CharField(
         max_length=10, unique=True, db_index=True,
         verbose_name=_("ID пользователя в Телеграм"))
@@ -144,19 +146,22 @@ class Order(Translatable, UpdateTimestampMixin, ValidateErrorMixin):
         verbose_name=_("Ресторан"))
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='orders',
-        verbose_name=_("Пользователь"))
+        blank=True, null=True, verbose_name=_("Пользователь"))
     order_number = models.PositiveIntegerField(
-        verbose_name=_("Статус заказа"))
+        verbose_name=_("Номер заказа"))
     order_accepted = models.BooleanField(
         default=False, verbose_name=_("Завершен"))
 
     def save(self, *args, **kwargs):
+        print(self.order_accepted)
+        print(self.pk)
         if self.pk is not None and self.order_accepted is True:
             bot = telebot.TeleBot(TOKEN)
             chat_id = self.user.telegram_chat_id
             text = StaticTranslation.objects.translate(
                 self.user.language_code
             ).get(key=constants.MESSAGE_6).value
+            print(text)
             bot.send_message(chat_id=chat_id, text=text)
             send_promotion(bot=bot, chat_id=chat_id)
         """ before save"""
@@ -170,7 +175,7 @@ class Order(Translatable, UpdateTimestampMixin, ValidateErrorMixin):
 
     def __str__(self):
         """ Return user's username when calling object """
-        return f'{self.pk} - {self.user.first_name}'
+        return f'{self.pk} - {self.user}'
 
 
 class Promotion(Translatable, UpdateTimestampMixin, ValidateErrorMixin):

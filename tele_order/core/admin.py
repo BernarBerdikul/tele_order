@@ -98,8 +98,9 @@ class PromotionAdmin(TranslatableAdmin):
         """ function for representing promotion's image
             on admin Restaurant change/add page """
         if obj.qr_code:
-            url = f"{settings.MEDIA_URL}/{constants.IMAGE_PROMOTION_SAVE_PATH}/" \
-                  f"{obj.image.name}"
+            print(obj.image.name)
+            print(f"{settings.MEDIA_ROOT}/{obj.image.name}")
+            url = f"{settings.MEDIA_ROOT}/{obj.image.name}"
             return mark_safe(f'<img src="{url}" width="320px" />')
 
     promotion_image.short_description = _('Фото рекламы')

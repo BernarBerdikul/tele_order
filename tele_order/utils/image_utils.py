@@ -20,12 +20,12 @@ def __files_unique_name(filename, new_filename: str, folder='images'):
 
 
 def promotion_image(instance, filename):
-    name = f'promotion_image_{instance.title}_{timezone.now().strftime("%Y-%m-%d %H:%M")}'
+    name = f'promotion_image_{instance.title}_{timezone.now().strftime("%Y-%m-%d-%H:%M")}'
     return __files_unique_name(
         filename, new_filename=name, folder=IMAGE_PROMOTION_SAVE_PATH)
 
 
 def qr_codes_path(instance, filename):
-    name = f'{instance.tag}_qr_code_{timezone.now().strftime("%Y-%m-%d %H:%M")}'
+    name = f'{instance.tag}_qr_code_{timezone.now().strftime("%Y-%m-%d-%H:%M")}'
     return __files_unique_name(
         filename, new_filename=name, folder=IMAGE_QR_SAVE_PATH)
