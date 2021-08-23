@@ -43,7 +43,7 @@ class Command(BaseCommand):
             chat_id = message.from_user.id
             language = get_language(message=message)
 
-            keyboard = telebot.types.ReplyKeyboardMarkup()
+            keyboard = telebot.types.InlineKeyboardMarkup()
             check_it_is_bot(message=message, bot=bot, language=language)
             if message.text is not None:
                 try:
