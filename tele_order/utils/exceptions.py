@@ -17,7 +17,6 @@ def custom_exception_handler(exc, context):
     """ overwrite custom exception """
     logger.error(''.join(traceback.format_exception(
         etype=type(exc), value=exc, tb=exc.__traceback__)))
-    # current_url = str(context['request'].path).split('/')[1]
     response = exception_handler(exc, context)
     if response is not None:
         errors = {}

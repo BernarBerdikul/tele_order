@@ -92,6 +92,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'tele_order.wsgi.application'
 
+# Channels
+ASGI_APPLICATION = 'tele_order.asgi.application'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

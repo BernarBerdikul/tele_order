@@ -67,12 +67,7 @@ RESERVED_TAG_LIST = [
     'api', 'super-secret-admin', 'media', 'admin', 'login', 'static',
 ]
 
-WELCOME_MESSAGE = 0
-
-TELEGRAM_ERROR_CHAT_ID = 421591563
-TELEGRAM_MESSAGES = (
-    (WELCOME_MESSAGE, _("HELLO"))
-)
+TELEGRAM_ERROR_CHAT_ID = 421591563  # need to change
 
 ###############################################################################
 """ Translation keys """
